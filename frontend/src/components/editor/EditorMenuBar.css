@@ -1,45 +1,84 @@
-/* EditorMenuBar — File / Edit dropdowns in the editor header.
-   Visual language borrowed from the toolbar's overflow menu
-   (tb-overflow-menu) so the two read as one system. */
-
+/* The editor's entire application menu lives behind the Velxio logo. The
+   first panel contains categories; its active category's submenu is a
+   separate panel placed immediately to its right. */
 .editor-menubar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin-left: 2px;
 }
 
-.emb-root {
-  position: relative;
-}
-
-.emb-trigger {
+.emb-brand-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  margin-left: -6px;
   background: transparent;
-  border: none;
-  color: var(--wb-12);
-  font: 400 13px system-ui, sans-serif;
-  padding: 4px 10px;
-  border-radius: 4px;
+  border: 0;
+  border-radius: 5px;
+  color: #0071e3;
   cursor: pointer;
 }
 
-.emb-trigger:hover,
-.emb-trigger-open {
-  background: var(--wb-5);
+.emb-brand-trigger .header-title {
   color: var(--wb-13);
 }
 
+.emb-brand-trigger:hover,
+.emb-brand-trigger-open {
+  background: var(--wb-5);
+}
+
+.emb-menu-list,
 .emb-menu {
   position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 230px;
+  top: calc(100% + 8px);
   background: var(--wb-3);
   border: 1px solid var(--wb-7);
   border-radius: 6px;
   padding: 4px;
-  z-index: 9500; /* above the toolbar and the canvas, below modals (10000) */
+  z-index: 9500; /* above the toolbar and canvas, below modals */
   box-shadow: var(--shadow-3);
+}
+
+/* The category panel starts below the logo. */
+.emb-menu-list {
+  left: 0;
+  min-width: 150px;
+}
+
+/* The selected category's content sits to the right of that panel. */
+.emb-menu {
+  left: calc(150px + 6px);
+  min-width: 230px;
+}
+
+.emb-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 18px;
+  background: transparent;
+  border: none;
+  color: var(--wb-12);
+  font: 400 13px system-ui, sans-serif;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.emb-trigger:hover,
+.emb-trigger-open {
+  background: var(--color-action-primary);
+  color: var(--color-fg-on-action);
+}
+
+.emb-menu-arrow {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 12px;
 }
 
 .emb-item {

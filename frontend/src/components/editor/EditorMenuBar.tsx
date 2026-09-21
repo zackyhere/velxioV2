@@ -37,6 +37,8 @@ import {
 } from '../../lib/editorCommands';
 import './EditorMenuBar.css';
 
+type MenuName = 'file' | 'edit' | 'view' | 'account' | 'help';
+
 type Item =
   | {
       kind: 'command';
@@ -68,7 +70,8 @@ const SITE = import.meta.env.VITE_PRO_BUILD ? '' : 'https://velxio.dev';
 
 export const EditorMenuBar: React.FC = () => {
   const { t } = useTranslation();
-  const [open, setOpen] = useState<'file' | 'edit' | 'view' | 'account' | 'help' | null>(null);
+  const [open, setOpen] = useState<MenuName | null>(null);
+  const [brandOpen, setBrandOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   // Re-render when owners (un)register their commands.
@@ -95,12 +98,16 @@ export const EditorMenuBar: React.FC = () => {
   const historyIndex = useSimulatorStore((s) => s.historyIndex);
 
   useEffect(() => {
-    if (!open) return;
+    if (!brandOpen) return;
+    const close = (): void => {
+      setBrandOpen(false);
+      setOpen(null);
+    };
     const onDown = (e: MouseEvent): void => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(null);
+      if (!rootRef.current?.contains(e.target as Node)) close();
     };
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setOpen(null);
+      if (e.key === 'Escape') close();
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
@@ -108,7 +115,7 @@ export const EditorMenuBar: React.FC = () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [brandOpen]);
 
   const fileItems: Item[] = [
     { kind: 'command', id: 'project.new', label: t('editor.menu.newProject', 'New workspace') },
@@ -272,19 +279,9 @@ export const EditorMenuBar: React.FC = () => {
     </button>
   );
 
-  const menu = (which: 'file' | 'edit' | 'view' | 'account' | 'help', label: string, items: Item[]): React.ReactNode => (
-    <div className="emb-root" key={which}>
-      <button
-        className={`emb-trigger${open === which ? ' emb-trigger-open' : ''}`}
-        aria-haspopup="menu"
-        aria-expanded={open === which}
-        onClick={() => setOpen((cur) => (cur === which ? null : which))}
-        onMouseEnter={() => setOpen((cur) => (cur && cur !== which ? which : cur))}
-      >
-        {label}
-      </button>
-      {open === which && (
-        <div className="emb-menu" role="menu">
+  const submenu = (which: MenuName, items: Item[]): React.ReactNode =>
+    open === which && (
+      <div className="emb-menu" role="menu" onClick={() => { setBrandOpen(false); setOpen(null); }}>
           {which === 'view' && (
             <>
               <button
@@ -462,18 +459,54 @@ export const EditorMenuBar: React.FC = () => {
                 renderCommand(item)
               ),
             )}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+
+  const menus: { id: MenuName; label: string; items: Item[] }[] = [
+    { id: 'file', label: t('editor.menu.file', 'File'), items: fileItems },
+    { id: 'edit', label: t('editor.menu.edit', 'Edit'), items: editItems },
+    { id: 'view', label: t('editor.menu.view', 'View'), items: viewItems },
+    { id: 'account', label: t('editor.menu.account', 'Account'), items: [] },
+    { id: 'help', label: t('editor.menu.help', 'Help'), items: helpItems },
+  ];
 
   return (
     <div className="editor-menubar" ref={rootRef}>
-      {menu('file', t('editor.menu.file', 'File'), fileItems)}
-      {menu('edit', t('editor.menu.edit', 'Edit'), editItems)}
-      {menu('view', t('editor.menu.view', 'View'), viewItems)}
-      {menu('account', t('editor.menu.account', 'Account'), [])}
-      {menu('help', t('editor.menu.help', 'Help'), helpItems)}
+      <button
+        className={`emb-brand-trigger${brandOpen ? ' emb-brand-trigger-open' : ''}`}
+        aria-label="Velxio menu"
+        aria-haspopup="menu"
+        aria-expanded={brandOpen}
+        onClick={() => {
+          setBrandOpen((current) => !current);
+          setOpen(null);
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="5" y="5" width="14" height="14" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4" />
+        </svg>
+        <span className="header-title">Velxio</span>
+      </button>
+      {brandOpen && (
+        <div className="emb-menu-list" role="menu" aria-label="Velxio menu">
+          {menus.map(({ id, label }) => (
+            <button
+              key={id}
+              role="menuitem"
+              className={`emb-trigger${open === id ? ' emb-trigger-open' : ''}`}
+              aria-haspopup="menu"
+              aria-expanded={open === id}
+              onClick={() => setOpen(id)}
+              onMouseEnter={() => setOpen(id)}
+            >
+              <span>{label}</span><span className="emb-menu-arrow">›</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {menus.map(({ id, items }) => submenu(id, items))}
     </div>
   );
 };

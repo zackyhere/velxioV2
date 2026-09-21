@@ -15,11 +15,9 @@ const GITHUB_URL = 'https://github.com/davidmonterocrespo24/velxio';
 const DISCORD_URL = 'https://discord.gg/3mARjJrh4E';
 
 interface AppHeaderProps {
-  /** Editor variant: a File/Edit menu bar rendered next to the logo. When
-   *  set, the marketing nav links (Home / Docs / Pricing / …) are hidden —
-   *  inside the editor they are noise that costs exactly the width the
-   *  toolbar is starved of on small screens; the logo still links home.
-   *  Same mechanism the Tauri desktop build uses (VITE_DESKTOP). */
+  /** Editor variant: the application menu rendered inside the Velxio logo.
+   *  When set, the marketing nav links (Home / Docs / Pricing / …) are
+   *  hidden so the editor toolbar retains as much room as possible. */
   editorMenu?: React.ReactNode;
   /** Editor variant: the unified toolbar strip rendered in the header's
    *  middle — the space the marketing nav used to occupy. One row instead
@@ -131,25 +129,30 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ editorMenu, editorToolbar 
     <header ref={headerRef} className={"app-header" + (editorToolbar ? ' app-header--with-toolbar' : '')}>
       <div className="header-content">
         <div className="header-left">
-          {/* Brand */}
+          {/* In the editor, the brand itself is the application-menu trigger.
+              Elsewhere it remains the ordinary home link. */}
           <div className="header-brand">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#0071e3"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="5" y="5" width="14" height="14" rx="2" />
-              <rect x="9" y="9" width="6" height="6" />
-              <path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4" />
-            </svg>
-            <Link to={localize('/')} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <span className="header-title">Velxio</span>
-            </Link>
+            {editorMenu ?? (
+              <>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#0071e3"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="5" y="5" width="14" height="14" rx="2" />
+                  <rect x="9" y="9" width="6" height="6" />
+                  <path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4" />
+                </svg>
+                <Link to={localize('/')} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <span className="header-title">Velxio</span>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Main nav links (web only). The Tauri desktop build hides
@@ -158,7 +161,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ editorMenu, editorToolbar 
               velxio-prod). VITE_DESKTOP is the env flag the Tauri
               build sets — main.tsx already uses it to gate the @pro
               overlay, same pattern here. */}
-          {editorMenu}
           {!import.meta.env.VITE_DESKTOP && !editorMenu && (
           <nav className={'header-nav-links' + (menuOpen ? ' header-nav-open' : '')}>
             {/* Marketing routes live in the pro overlay; the OSS build has
